@@ -133,7 +133,7 @@ int main(int argc, char *argv[])
 	switch (mode) {
 		case MODE_LOGIN:
 			if ((unified = getpass("Password:")) == NULL) {
-				syslog(LOG_ERR, "user %s: getpass (Password): %m",
+				syslog(LOG_ERR, "user %s: getpass (Password)",
 				    username);
 				exit(EXIT_FAILURE);
 			}
@@ -175,8 +175,9 @@ int main(int argc, char *argv[])
 					unified = response + count + 1;
 				}
 			}
-         //syslog(LOG_ERR, "response %s", response);
+#if 0
          syslog(LOG_ERR, "got %s", unified);
+#endif
 
 			if (mode < 2) {
 				syslog(LOG_ERR, "user %s: protocol error "
@@ -271,10 +272,16 @@ googleauth_login(const char *username, const char *password)
       if (check_scratch_codes(username, code)) {
          if (config.is_totp) { 
             if (check_timebased_code(&config, secret, secretLen, code)) { 
+#if 0 
                syslog(LOG_ERR, "user %s code %d: " 
                      "check_timebased_code != 0", 
                         username,
                         code); 
+#else
+               syslog(LOG_ERR, "user %s: " 
+                     "check_timebased_code != 0", 
+                        username);
+#endif
                if (secret) {
                   memset(secret, 0, secretLen);
                   free(secret);
