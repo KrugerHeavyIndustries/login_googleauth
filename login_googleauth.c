@@ -78,6 +78,12 @@ int main(int argc, char *argv[])
 
    int lastchance = 0;
 
+#ifdef KRB5
+   char invokinguser[MAXLOGNAME];
+   int arg_login = 0, arg_notickets = 0;
+   invokinguser[0] = '\0';
+#endif
+
    memset(password, 0, sizeof(password));
    memset(response, 0, sizeof(response));
 
@@ -196,7 +202,19 @@ int main(int argc, char *argv[])
 	ret = googleauth_login(username, code); 
 
    if (ret == AUTH_OK) 
-      ret = pwd_login(username, password, wheel, lastchance, class);
+
+#ifdef PASSWD
+ret = pwd_login(username, password, wheel, lastchance, class);
+#endif
+
+#ifdef KRB5_PASSWD
+ret = krb5auth(username,password);
+#endif
+
+#ifdef KRB5
+ret = krb5_login(username, invokinguser, password, arg_login,
+                         !arg_notickets, class);
+#endif
 
    memset(password, 0, sizeof(password));
    memset(response, 0, sizeof(response));

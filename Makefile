@@ -1,18 +1,32 @@
-#	$Id: Makefile,v 1.1.1.1 2012/03/16 14:13:08 raxis Exp $
+#------------------------------------------------------------------------------
 
-PROG=	login_googleauth
-MAN=	login_googleauth.8
-SRCS=	login_googleauth.c login_passwd.c pwd_gensalt.c googleauth.c \
-	base32.c 
-CFLAGS+=-DPASSWD -Wall -Wbounded -std=c99 -ggdb -O0 -I/usr/src/libexec/login_passwd
-	
-DPADD+= ${LIBUTIL}
-LDADD+= -lutil -lcrypto
-.PATH: /usr/src/libexec/login_passwd /usr/src/usr.bin/passwd
+SOURCE= login_googleauth.c googleauth.c /usr/src/src/usr.bin/passwd/pwd_gensalt.c base32.c /usr/src/libexec/login_passwd/login_passwd.c
+KRB5_PASSWD_SOURCE = krb5.c
+KRB5_SOURCE = /usr/src/libexec/login_krb5/login_krb5.c
+PROGRAM=login_googleauth
+INCLUDES=/usr/src/libexec/login_passwd
+CFLAGS+=-Wall -Wbounded -std=c99 -ggdb -O0
+LIBRARIES=util -lcrypto
+KRB5_LIBRARIES=krb5 -lasn1 -lcrypto -lutil
+CC=gcc
 
-BINOWN=	root
-BINGRP=	auth
-BINMODE=2555
-BINDIR=	/usr/libexec/auth
+#------------------------------------------------------------------------------
 
-.include <bsd.prog.mk>
+.PHONY: password
+
+password : $(SOURCE)
+
+	$(CC) -DPASSWD $(CFLAGS) -I$(INCLUDES) $(SOURCE) -o$(PROGRAM) -l$(LIBRARIES)
+
+.PHONY: krb5_password
+
+krb5_password : $(SOURCE) $(KRB5_SOURCE)
+
+	$(CC) -DKRB5_PASSWD $(CFLAGS) -I$(INCLUDES) $(SOURCE) $(KRB5_PASSWD_SOURCE) -o$(PROGRAM) -l$(KRB5_LIBRARIES) -l$(LIBRARIES)
+
+.PHONY: krb5
+
+krb5 : $(SOURCE)
+
+	$(CC) -DKRB5 $(CFLAGS) -I$(INCLUDES) $(SOURCE) $(KRB5_SOURCE)  -o$(PROGRAM) -l$(KRB5_LIBRARIES) -l$(LIBRARIES)
+
