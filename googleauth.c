@@ -476,10 +476,16 @@ int check_counterbased_code(struct Config *config,
                             int length, int code,
                             long hotp_counter,
                             int *must_advance_counter) {
-  if (hotp_counter < 1) {
+  if (hotp_counter < 0) {
     // The secret file did not actually contain information for a 
     // counter-based code. Return to call and see if any auth methods
     // apply.
+	//
+	//Google Authenticator on iphone starts it's counter at 0. The original
+	//code for this module created a config file who's counter started at 1
+	//This meant that a user had to iterate their counter at least once before
+	//being able to log in. 
+	//Setting the default counter value to 0 fixes this user problem. 
     return 1;
   }
 
