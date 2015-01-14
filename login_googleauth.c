@@ -195,19 +195,26 @@ int main(int argc, char *argv[])
 
 	ret = googleauth_login(username, code); 
 
-   if (ret == AUTH_OK) 
-      ret = pwd_login(username, password, wheel, lastchance, class);
+//   if (ret == AUTH_OK) 
+//      ret = pwd_login(username, password, wheel, lastchance, class);
 
    memset(password, 0, sizeof(password));
    memset(response, 0, sizeof(response));
-   if (unified != NULL)
+	if (unified != NULL){
       memset(unified, 0, strlen(unified));
-
+	}
    if (ret != AUTH_OK) {
 		syslog(LOG_INFO, "user %s: reject", username);
 		fprintf(back, BI_REJECT "\n");
-	} else { 
+	}
+	else { 
       syslog(LOG_INFO, "user %s: accepted", username);
+		//This print statement returns the 'BI_AUTH' signal back to the bsd_auth
+		//subsystem to proove the user account authenticated correctly. 
+		//By putting this here, and commenting out the 'ret=pwd_login' statement
+		//above, we shortcircuit the check to /etc/master.passwd for a user password
+		//and rely ONLY on the GoogleAuth token for authentication. 
+		fprintf(back, BI_AUTH "\n");
    }
 	closelog();
 	exit(EXIT_SUCCESS);
