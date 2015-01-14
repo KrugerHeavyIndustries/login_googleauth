@@ -218,16 +218,21 @@ seperate_code_and_password(char *code, char *password, const char *unified)
 {     
    // Verification are six digits starting with '0'..'9',
    // scratch codes are eight digits starting with '1'..'9'
+   //
+   // OpenBSD provides strlcpy, which is a more robust string copy
+   // method. This code has been migrated to the strlcpy method
+   // from the strncpy method because strncpy was producing 
+   // corrupt tokenization for code lengths larger than 7.
    size_t len = strlen(unified);
    size_t span = strspn(unified, "0123456789");
    switch (span) {
       case 6:
-         strncpy(code, unified, 6);
-         strncpy(password, unified + 6, len - 6);
+         strlcpy(code, unified, 7);
+         strlcpy(password, unified + 6, len - 5);
          return 0;
       case 8:
-         strncpy(code, unified, 8);
-         strncpy(password, unified + 8, len - 8);
+         strlcpy(code, unified, 9);
+         strlcpy(password, unified + 8, len - 7);
          return 0;
    }
    return 1;
